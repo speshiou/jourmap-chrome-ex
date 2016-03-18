@@ -4,7 +4,7 @@
 
 (function(angular) {
 	'use strict'
-	angular.module('JourmapChromeEx', ['ngMaterial', 'ngMessages', 'ngSanitize'])
+	angular.module('JourmapChromeEx', ['ngMaterial', 'ngMessages', 'ngSanitize', 'jmDirectives'])
 	.config(function($locationProvider, $mdThemingProvider) {
 	  $mdThemingProvider.theme('default')
 	    .primaryPalette('green', {
@@ -48,7 +48,7 @@
 		
 		var appendQueryParameter = function(url, key, value) {
 			if (value) {
-				url += (url.indexOf("?") >= 0 ? "&" : "?") + key + "=" + value;
+				url += (url.indexOf("?") >= 0 ? "&" : "?") + key + "=" + encodeURIComponent(value);
 			}
 			return url;
 		};
@@ -71,6 +71,10 @@
 		
 		$scope.backToJourneyList = function() {
 			$scope.selectedJourney = null;
+		};
+		
+		$scope.getSaveStateIconName = function(saved) {
+			return saved ? "star" : "star_border";
 		};
 		
 		$scope.selectPlace = function(place) {
@@ -196,7 +200,8 @@
 		
 		$scope.loadMorePlaces = function(cursor) {
 			$scope.loadingPlaces = true;
-			var path = "/places/textsearch?query=" + $scope.selectedText;
+			var path = "/places/textsearch";
+			path = appendQueryParameter(path, "query", $scope.selectedText);
 			path = appendQueryParameter(path, "cursor", cursor);
 			requestGet(apiHost + path, function(response) {
 				var result = response.data;

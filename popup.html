@@ -12,6 +12,8 @@
     <style>
 	html,body {
 	    min-width:360px;
+		max-width:360px;
+		width:360px;
 	}
 	
 	.content {
@@ -25,6 +27,12 @@
 	md-toolbar.md-hue-1 {
 		background-color: rgba(0, 0, 0, 0) !important;
 		box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.5);
+	}
+	
+	.jm-truncate {
+	  white-space: nowrap;
+	  overflow: hidden;
+	  text-overflow: ellipsis;
 	}
 	
 	md-tabs.layout-fill,
@@ -64,6 +72,25 @@
 	._md-list-item-inner {
 		box-sizing: border-box;
 	}
+	
+	.jm-empty > div {
+		text-align: center;
+	}
+	
+	.jm-empty md-icon {
+		font-size: 36px;
+	}
+	
+	.jm-ratingbar {
+		position: relative;
+		color: #df5b15;
+	}
+	
+	.jm-ratingbar > span {
+		position: absolute;
+	    left: 0px;
+	    overflow: hidden;
+	}
     </style>
 
     <!--
@@ -79,6 +106,7 @@
 		<script src="angular-messages.min.js"></script>
 		<script src="angular-sanitize.min.js"></script>
 		<script src="angular-material.min.js"></script>
+		<script src="directives.js"></script>
 		<script src="popup.js"></script>
   </head>
   <body ng-app="JourmapChromeEx" ng-controller="PopupController" ng-cloak>
@@ -96,19 +124,19 @@
   				<md-content layout="column" layout-fill>
 					<md-toolbar class="md-hue-1">
 				      <div class="md-toolbar-tools">
-						  <h2>
+						  <h2 class="jm-truncate">
 				            <span>{{ searchResultTitle }}</span>
 				          </h2>
 				      </div>
 				    </md-toolbar>
-					<md-content flex>
+					<md-content ng-if="places.length > 0 || placesResult.more" flex>
   					<md-list>
   						<md-list-item class="md-2-line" ng-click="selectPlace(place)" ng-repeat="place in places">
   						    <md-icon class="md-avatar">{{ getPlaceIconName(place.types) }}</md-icon>
 							<div layout="column" layout-align="center stretch" flex>
 								<div class="jm-list-item-text" layout="column">
 								    <h3 class="md-subhead jm-truncate">{{ place.name }}</h3>
-									<h4 class="md-body-2 jm-truncate" >{{ getRatingString(place.rating) }}</h4>
+									<h4 class="md-body-2 jm-truncate" ><jm-rating-bar jm-rating="place.rating"></jm-rating-bar></h4>
 									<p class="md-body-1">{{ place.formatted_address }}</p>
 							    </div>
 							</div>
@@ -120,6 +148,16 @@
 						<md-progress-circular class="md-accent" md-mode='indeterminate' md-diameter="40" ng-if="loadingPlaces"></md-progress-circular>
 					</div>
   				</md-content>
+				<md-content class="jm-empty" ng-if="places.length == 0 && placesResult && !placesResult.more" layout="column" layout-align="center center" flex>
+					<div>
+						<div>
+							<md-icon>location_off</md-icon>
+					</div>
+						<div>
+							<p class="md-title">Place Not Found</p>
+						</div>
+					</div>
+				</md-content>
   			</md-tab>
   			<md-tab label="dummy" ng-if="selectedPlace">
   				<md-content layout="column" layout-fill>
@@ -129,15 +167,24 @@
 				            <md-icon>arrow_back</md-icon>
 				  		  </md-button>
 						  <h2>
-				            <span>{{ selectedPlace.name }}</span>
+				            <span>Select a Journey</span>
 				          </h2>
 				      </div>
 				    </md-toolbar>
 					<md-content flex>
-					<div class="md-subhead" layout-padding>
-						Select a journey to add to ...
-					</div>
   					<md-list>
+  						<md-list-item class="md-2-line">
+  						    <md-icon class="md-avatar">{{ getPlaceIconName(selectedPlace.types) }}</md-icon>
+							<div layout="column" layout-align="center stretch" flex>
+								<div class="jm-list-item-text" layout="column">
+								    <h3 class="md-subhead jm-truncate">{{ selectedPlace.name }}</h3>
+									<h4 class="md-body-2 jm-truncate" ><jm-rating-bar jm-rating="selectedPlace.rating"></jm-rating-bar></h4>
+									<p class="md-body-1">{{ selectedPlace.formatted_address }}</p>
+							    </div>
+							</div>
+							<md-icon class="jm-icon-next" ng-class="{ 'md-accent' : selectedPlace.is_saved }">{{ getSaveStateIconName(selectedPlace.is_saved) }}</md-icon>
+							<md-divider></md-divider>
+  						</md-list-item>
   						<md-list-item class="md-2-line" ng-click="selectJourney(journey)" ng-repeat="journey in journeys">
   						    <md-icon class="md-avatar">map</md-icon>
 							<div layout="column" layout-align="center stretch" flex>
@@ -163,17 +210,17 @@
 				            <md-icon>arrow_back</md-icon>
 				  		  </md-button>
 						  <h2>
-				            <span>Add {{ selectedPlace.name }} to ...</span>
+				            <span>Select a Day</span>
 				          </h2>
 				      </div>
 				    </md-toolbar>
 					<md-content flex>
   					<md-list>
   						<md-list-item class="md-2-line" ng-click="addToJourneyDay(selectedJourney, day, selectedPlace)" ng-repeat="day in selectedJourney.days">
-  							<div class="md-list-item-text" layout="column">
-  					            <h3>Day {{ $index + 1 }}</h3>
-  					            <p>{{ getDayItinerary(day) }}</p>
-  					          </div>
+							<div class="jm-list-item-text" layout="column">
+							    <h3 class="md-subhead jm-truncate">Day {{ $index + 1 }}</h3>
+								<p class="md-body-1">{{ getDayItinerary(day) }}</p>
+						    </div>
   						</md-list-item>
   					</md-list>
 					<div layout="column" layout-align="center center" layout-padding>
