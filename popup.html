@@ -1,0 +1,189 @@
+<!doctype html>
+<!--
+ This page is shown when the extension button is clicked, because the
+ "browser_action" field in manifest.json contains the "default_popup" key with
+ value "popup.html".
+ -->
+<html>
+  <head>
+    <title>Getting Started Extension's Popup</title>
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link href='https://material.angularjs.org/latest/angular-material.css' rel='stylesheet' type='text/css'>
+    <style>
+	html,body {
+	    min-width:360px;
+	}
+	
+	.content {
+		min-height: 400px;
+	}
+	
+	#signin h1 {
+		text-align:center;
+	}
+	
+	md-toolbar.md-hue-1 {
+		background-color: rgba(0, 0, 0, 0) !important;
+		box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.5);
+	}
+	
+	md-tabs.layout-fill,
+	md-tabs.layout-fill md-tabs-content-wrapper,
+	md-tabs.layout-fill md-tabs-content-wrapper md-tab-content,
+	md-tabs.layout-fill md-tabs-content-wrapper md-tab-content [md-tabs-template] {
+		height: 100%;
+	}
+	md-tabs.md-tabs-no-header>md-tabs-wrapper {
+		height:0;
+		overflow: hidden;
+	}
+	
+	md-list-item h3.md-subhead {
+		margin: 0;
+		color: rgba(0, 0, 0, 0.87);
+	}
+	
+	md-list-item h4.md-body-2 {
+		margin: 0;
+		color: rgba(0, 0, 0, 0.87);
+	}
+	
+	md-list-item p.md-body-1 {
+		margin: 0;
+		color: rgba(0, 0, 0, 0.54);
+	}
+	
+	md-list-item .jm-list-item-text {
+		margin: 16px 0;
+	}
+	
+	md-list-item .jm-icon-next {
+	    margin-left:16px;
+	}
+	
+	._md-list-item-inner {
+		box-sizing: border-box;
+	}
+    </style>
+
+    <!--
+      - JavaScript and HTML must be in separate files: see our Content Security
+      - Policy documentation[1] for details and explanation.
+      -
+      - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
+     -->
+		<script src="jquery-2.2.2.min.js"></script>
+		<script src="angular.min.js"></script>
+		<script src="angular-animate.min.js"></script>
+		<script src="angular-aria.min.js"></script>
+		<script src="angular-messages.min.js"></script>
+		<script src="angular-sanitize.min.js"></script>
+		<script src="angular-material.min.js"></script>
+		<script src="popup.js"></script>
+  </head>
+  <body ng-app="JourmapChromeEx" ng-controller="PopupController" ng-cloak>
+	  <md-content class="content" ng-if="!user" layout-fill layout="column" layout-align="center center">
+	<md-progress-circular class="md-accent" md-mode='indeterminate' md-diameter="40" ng-if="loading"></md-progress-circular>
+	<div ng-if="!loading" layout="column" layout-align="center center">
+		<h1>Jourmap</h1>
+		<p>Please sign in first before you use this plugin</p>
+		<md-button class="md-raised md-primary" ng-click="openJourmap()">Open Jourmap</md-button>
+	</div>
+  </md-content>
+    <md-content class="content" ng-if="user" layout="column" layout-fill>
+  	  <md-tabs class="md-tabs-no-header" md-autoselect md-dynamic-height layout-fill ng-cloak>
+  	        <md-tab label="dummy">
+  				<md-content layout="column" layout-fill>
+					<md-toolbar class="md-hue-1">
+				      <div class="md-toolbar-tools">
+						  <h2>
+				            <span>{{ searchResultTitle }}</span>
+				          </h2>
+				      </div>
+				    </md-toolbar>
+					<md-content flex>
+  					<md-list>
+  						<md-list-item class="md-2-line" ng-click="selectPlace(place)" ng-repeat="place in places">
+  						    <md-icon class="md-avatar">{{ getPlaceIconName(place.types) }}</md-icon>
+							<div layout="column" layout-align="center stretch" flex>
+								<div class="jm-list-item-text" layout="column">
+								    <h3 class="md-subhead jm-truncate">{{ place.name }}</h3>
+									<h4 class="md-body-2 jm-truncate" >{{ getRatingString(place.rating) }}</h4>
+									<p class="md-body-1">{{ place.formatted_address }}</p>
+							    </div>
+							</div>
+							<md-icon class="jm-icon-next">navigate_next</md-icon>
+  						</md-list-item>
+  					</md-list>
+					<div layout="column" layout-align="center center" layout-padding>
+						<md-button ng-if="placesResult.more&&!loadingPlaces" class="md-accent" ng-click="loadMorePlaces(placesResult.next_page_token)">Load More</md-button>
+						<md-progress-circular class="md-accent" md-mode='indeterminate' md-diameter="40" ng-if="loadingPlaces"></md-progress-circular>
+					</div>
+  				</md-content>
+  			</md-tab>
+  			<md-tab label="dummy" ng-if="selectedPlace">
+  				<md-content layout="column" layout-fill>
+					<md-toolbar class="md-hue-1">
+				      <div class="md-toolbar-tools">
+				          <md-button class="md-icon-button" aria-label="" ng-click="backToPlaceList();">
+				            <md-icon>arrow_back</md-icon>
+				  		  </md-button>
+						  <h2>
+				            <span>{{ selectedPlace.name }}</span>
+				          </h2>
+				      </div>
+				    </md-toolbar>
+					<md-content flex>
+					<div class="md-subhead" layout-padding>
+						Select a journey to add to ...
+					</div>
+  					<md-list>
+  						<md-list-item class="md-2-line" ng-click="selectJourney(journey)" ng-repeat="journey in journeys">
+  						    <md-icon class="md-avatar">map</md-icon>
+							<div layout="column" layout-align="center stretch" flex>
+								<div class="jm-list-item-text" layout="column">
+								    <h3 class="md-subhead jm-truncate">{{ journey.title }}</h3>
+									<p class="md-body-1">{{ place.formatted_address }}</p>
+							    </div>
+							</div>
+							<md-icon class="jm-icon-next">navigate_next</md-icon>
+  						</md-list-item>
+  					</md-list>
+					<div layout="column" layout-align="center center" layout-padding>
+						<md-button  ng-if="journeysResult.more&&!loadingJourneys" class="md-accent" ng-click="loadMoreJourneys(journeysResult.cursor)">Load More</md-button>
+						<md-progress-circular class="md-accent" md-mode='indeterminate' md-diameter="40" ng-if="loadingJourneys"></md-progress-circular>
+					</div>
+  				</md-content>
+  			</md-tab>
+  			<md-tab label="dummy" ng-if="selectedJourney">
+  				<md-content layout="column" layout-fill>
+					<md-toolbar class="md-hue-1">
+				      <div class="md-toolbar-tools">
+				          <md-button class="md-icon-button" aria-label="" ng-click="backToJourneyList();">
+				            <md-icon>arrow_back</md-icon>
+				  		  </md-button>
+						  <h2>
+				            <span>Add {{ selectedPlace.name }} to ...</span>
+				          </h2>
+				      </div>
+				    </md-toolbar>
+					<md-content flex>
+  					<md-list>
+  						<md-list-item class="md-2-line" ng-click="addToJourneyDay(selectedJourney, day, selectedPlace)" ng-repeat="day in selectedJourney.days">
+  							<div class="md-list-item-text" layout="column">
+  					            <h3>Day {{ $index + 1 }}</h3>
+  					            <p>{{ getDayItinerary(day) }}</p>
+  					          </div>
+  						</md-list-item>
+  					</md-list>
+					<div layout="column" layout-align="center center" layout-padding>
+						<md-button ng-if="!loadingJourneyDays" class="md-accent" ng-click="addJourneyDay(selectedJourney)">Add Day</md-button>
+						<md-progress-circular class="md-accent" md-mode='indeterminate' md-diameter="40" ng-if="loadingJourneyDays"></md-progress-circular>
+					</div>
+  				</md-content>
+  			</md-tab>
+  		</md-tabs>
+	</md-content>
+  </body>
+</html>
+
