@@ -1,4 +1,10 @@
 {
+	"app_desc": {
+		"message": "Add interested places to your journeys on Jourmap"
+	},
+	"add_to_jourmap": {
+		"message": "Add to Jourmap"
+	},
 	"select_text_first": {
 		"message": "Please select a place name in current web page first<br />Ex: This is the <span class='demo_text'>Windsor Castle</span>"
 	},

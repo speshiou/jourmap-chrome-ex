@@ -1,4 +1,10 @@
 {
+	"app_desc": {
+		"message": "將你所感興趣的地點加到你的Jourmap旅程"
+	},
+	"add_to_jourmap": {
+		"message": "加到Jourmap"
+	},
 	"select_text_first": {
 		"message": "請先選取網頁中的地點名稱<br />如: 這是 <span class='demo_text'>溫莎城堡</span>"
 	},
