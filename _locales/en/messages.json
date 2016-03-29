@@ -1,4 +1,7 @@
 {
+	"select_text_first": {
+		"message": "Please select a place name in current web page first<br />Ex: This is the <span class='demo_text'>Windsor Castle</span>"
+	},
 	"sign_in_first": {
 		"message": "Please sign in first before you use this extension"
 	},

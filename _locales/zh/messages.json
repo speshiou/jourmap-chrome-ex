@@ -1,4 +1,7 @@
 {
+	"select_text_first": {
+		"message": "請先選取網頁中的地點名稱<br />如: 這是 <span class='demo_text'>溫莎城堡</span>"
+	},
 	"sign_in_first": {
 		"message": "使用此擴充功能前，請先登入"
 	},

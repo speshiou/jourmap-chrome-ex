@@ -113,6 +113,25 @@
 	.md-list-item-text {
 		padding: 16px 0;
 	}
+	
+	.demo_text {
+	    position: relative;
+	}
+	
+	.demo_text textarea {
+	    position: absolute;
+	    top: 0;
+	    left: 0;
+	    border: 0 none transparent;
+	    margin: 0;
+	    padding: 0;
+	    outline: none;
+	    resize: none;
+	    overflow: hidden;
+	    font-family: inherit;
+	    font-size: 1em;
+		background-color: transparent;
+	}
     </style>
 
     <!--
@@ -132,7 +151,17 @@
 		<script src="popup.js"></script>
   </head>
   <body ng-app="JourmapChromeEx" ng-controller="PopupController" ng-cloak>
-	  <md-content class="content" ng-if="!user" layout-fill layout="column" layout-align="center center">
+		<md-content class="content" ng-if="!selectedText" layout="column" layout-align="center center" layout-fill>
+		<div class="jm-empty">
+			<div>
+				<md-icon>text_format</md-icon>
+			</div>
+			<div>
+				<p class="md-title" ng-bind-html="_('select_text_first')"></p>
+			</div>
+		</div>
+	  </md-content>
+	  <md-content class="content" ng-if="selectedText&&!user" layout-fill layout="column" layout-align="center center">
 	<md-progress-circular class="md-accent" md-mode='indeterminate' md-diameter="40" ng-if="loading"></md-progress-circular>
 	<div ng-if="!loading" layout="column" layout-align="center center">
 		<h1>Jourmap</h1>

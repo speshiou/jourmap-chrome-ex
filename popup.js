@@ -19,7 +19,7 @@
 	      'default': '500' // use shade 200 for default, and keep all other shades the same
 	    });
 	})
-	.controller('PopupController', function($scope, $rootScope, $location, $mdDialog, $mdToast, $http, $timeout, $window, $document, $filter, $anchorScroll) {
+	.controller('PopupController', function($scope, $rootScope, $location, $mdDialog, $mdToast, $http, $timeout, $window, $document, $filter, $anchorScroll, $element) {
 		$http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
 		$scope.host = "https://www.jourmap.com";
 		var apiHost = $scope.host + "/_api";
@@ -269,23 +269,24 @@
 		    openNewTab(url);
 		};
 		
-		var parseSelectedText = function() {
+		var parseSelectedText = function(callback) {
 			chrome.tabs.executeScript( {
 			  code: "window.getSelection().toString();"
 			}, function(selection) {
 				console.log(selection)
 				if (selection && selection.length > 0) {
 					$scope.selectedText = selection[0].replace(/\r?\n|\r/g, "").trim();
-				} else {
-					return;
-				}
-
-				$timeout(function() {
 					if (!$scope.selectedText || !$scope.selectedText.trim()) {
+						$scope.selectedText = null;
+						callback(null);
 						return;
 					}
-					$scope.loadMorePlaces(null);
-				});
+					callback($scope.selectedText);
+				} else {
+					$scope.selectedText = null;
+					callback(null);
+					return;
+				}
 			});	
 		};
 		
@@ -314,17 +315,42 @@
 			});
 		};
 		
-		$timeout(function() {
-			requestGet(apiHost + "/me", function(response) {
-				var user = response.data;
-				$scope.user = user;
-				$scope.loading = false;
-				if (!$scope.user || !$scope.user.id) {
-					$scope.user = null;
-				} else {
-					parseSelectedText();
+		parseSelectedText(function(text) {
+			$timeout(function() {
+				if (!text) {
+					if ($(".dummy_textarea").length > 0) {
+	                    $('.dummy_textarea').remove();
+	                }
+					var demoSpan = angular.element(".demo_text");
+	                var demoText = demoSpan.text();
+	                $('<textarea class="dummy_textarea" />')
+	                    .appendTo(demoSpan)
+	                    .val(demoText)
+	                    .focus()
+	                    .select()
+						.on('focus', function() {
+							$(this).select();
+						})
+						.on('blur', function() {
+							$(this).select();
+						})
+						.click(function() {
+							$(this).select();
+						});
+					return;
 				}
+				requestGet(apiHost + "/me", function(response) {
+					var user = response.data;
+					$scope.user = user;
+					$scope.loading = false;
+					if (!$scope.user || !$scope.user.id) {
+						$scope.user = null;
+					} else {
+						$scope.loadMorePlaces(null);
+					}
+				});
 			});
 		});
+		
 	});
 })(window.angular);
