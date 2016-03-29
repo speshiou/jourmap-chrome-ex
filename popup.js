@@ -46,6 +46,18 @@
 			});
 		}
 		
+		var requestDelete = function(url, callback) {
+			$http({
+			        url: url,
+			        method: "DELETE"
+			    }).then(function(response) {
+				callback(response);
+			},
+			function(response) {
+				callback(response);
+			});
+		}
+		
 		var appendQueryParameter = function(url, key, value) {
 			if (value) {
 				url += (url.indexOf("?") >= 0 ? "&" : "?") + key + "=" + encodeURIComponent(value);
@@ -57,12 +69,48 @@
 		$scope.places = [];
 		$scope.journeys = [];
 		
+		$scope._ = function(msgKey, msgArgs) {
+			return chrome.i18n.getMessage(msgKey, msgArgs);
+		};
+		
 		$scope.openJourmap = function() {
 			openNewTab($scope.host);
 		}
 		
-		$scope.getPlaceIconName = function() {
-			return "place";
+		$scope.getPlaceIconName = function(types) {
+			for (var i in types) {
+				var type = types[i];
+				if (type == "airport") {
+					return "flight"
+				} else if (type == "train_station") {
+					return "train"
+				} else if (type == "lodging") {
+					return "hotel"
+				} else if (type == "food") {
+					return "restaurant"
+				}
+			}
+			return "place"
+		};
+		
+		$scope.savePlace = function(place, save) {
+			if (save) {
+				requestPost(apiHost + "/place/" + place.id + "/save", {}, function(response) {
+					if (response.data) {
+						place.is_saved = true;
+					}
+				});
+			} else {
+				requestDelete(apiHost + "/place/" + place.id + "/save", function(response) {
+					if (response.data) {
+						place.is_saved = false;
+					}
+				});
+			}
+		};
+		
+		$scope.openJourney = function(journey) {
+			openNewTab(journey.url);
 		};
 		
 		$scope.backToPlaceList = function() {
@@ -77,15 +125,59 @@
 			return saved ? "star" : "star_border";
 		};
 		
+		$scope.showAddJourney = function() {
+			$scope.showNewJourney = true;
+		};
+		
+		$scope.createJourney = function(newJourneyData) {
+			requestPost(apiHost + "/journey?add_first_day=true", { title: newJourneyData.title }, function(response) {
+				var newJourney = response.data;
+				$scope.journeys.splice(0, 0, newJourney);
+				$scope.showNewJourney = false;
+				$scope.selectJourney(newJourney);
+			});
+		};
+		
 		$scope.selectPlace = function(place) {
 			$scope.selectedPlace = place;
-			$scope.journeys = [];
+			$scope.itineraries = [];
 			
 			requestPost(apiHost + "/places", { gmap_place_id: place.place_id }, function(response) {
 				$scope.selectedPlace = response.data;
-				$scope.loadMoreJourneys(null);
+				requestGet(apiHost + "/place/" + $scope.selectedPlace.id, function(response) {
+					$scope.selectedPlace = response.data;
+					$scope.loadMoreItineraries(null);
+				});
 			});
 		};
+		
+		$scope.getMapImageUrl = function(place) {
+			return "https://maps.googleapis.com/maps/api/staticmap?size=320x180&zoom=13&markers=" + encodeURIComponent(place.loc.lat + "," + place.loc.lng);
+		};
+		
+		$scope.loadMoreItineraries = function(cursor) {
+			$scope.loadingItineraries = true;
+			var path = "/place/" + $scope.selectedPlace.id + "/itinerary";
+			path = appendQueryParameter(path, "cursor", cursor);
+			requestGet(apiHost + path, function(response) {
+				var result = response.data;
+				for (var i in result.results) {
+					var itinerary = result.results[i];
+					$scope.itineraries.push(itinerary);
+				}
+				$scope.loadingItineraries = false;
+			});
+		};
+		
+		$scope.selectJourneys = function() {
+			$scope.showJourneys = true;
+			$scope.journeys = [];
+			$scope.loadMoreJourneys(null);
+		}
+		
+		$scope.backToPlaceInfo = function() {
+			$scope.showJourneys = false;
+		}
 		
 		$scope.loadMoreJourneys = function(cursor) {
 			$scope.loadingJourneys = true;
@@ -94,8 +186,8 @@
 			requestGet(apiHost + path, function(response) {
 				var result = response.data;
 				$scope.journeysResult = result;
-				for (var i in result.journeys) {
-					var journey = result.journeys[i];
+				for (var i in result.results) {
+					var journey = result.results[i];
 					$scope.journeys.push(journey);
 				}
 				$scope.loadingJourneys = false;
@@ -183,12 +275,11 @@
 			}, function(selection) {
 				console.log(selection)
 				if (selection && selection.length > 0) {
-					$scope.selectedText = selection[0];
+					$scope.selectedText = selection[0].replace(/\r?\n|\r/g, "").trim();
 				} else {
 					return;
 				}
-				
-				$scope.searchResultTitle = chrome.i18n.getMessage("search_results_title", [ $scope.selectedText ]);
+
 				$timeout(function() {
 					if (!$scope.selectedText || !$scope.selectedText.trim()) {
 						return;

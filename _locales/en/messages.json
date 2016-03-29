@@ -1,5 +1,50 @@
 {
+	"sign_in_first": {
+		"message": "Please sign in first before you use this extension"
+	},
+	"open_jourmap": {
+		"message": "Open Jourmap"
+	},
 	"search_results_title": {
 		"message": "Searches related to $1"
+	},
+	"load_more": {
+		"message": "Load More"
+	},
+	"place_not_found": {
+		"message": "Place Not Found"
+	},
+	"save": {
+		"message": "Save"
+	},
+	"related_itineraries": {
+		"message": "Related Itineraries"
+	},
+	"add_to_journeys": {
+		"message": "Add to Journeys"
+	},
+	"select_a_journey": {
+		"message": "Select a Journey"
+	},
+	"create_new_journey": {
+		"message": "Create New Journey"
+	},
+	"title": {
+		"message": "Title"
+	},
+	"create": {
+		"message": "Create"
+	},
+	"select_a_day": {
+		"message": "Select a Day"
+	},
+	"day_number": {
+		"message": "Day $1"
+	},
+	"add_day": {
+		"message": "Add Day"
+	},
+	"open_on_jourmap": {
+		"message": "Open on Jourmap"
 	}
 }

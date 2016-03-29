@@ -1,0 +1,50 @@
+{
+	"sign_in_first": {
+		"message": "使用此擴充功能前，請先登入"
+	},
+	"open_jourmap": {
+		"message": "開啟Jourmap"
+	},
+	"search_results_title": {
+		"message": "搜尋結果關於 $1"
+	},
+	"load_more": {
+		"message": "更多"
+	},
+	"place_not_found": {
+		"message": "找不到地點"
+	},
+	"save": {
+		"message": "儲存"
+	},
+	"related_itineraries": {
+		"message": "相關行程"
+	},
+	"add_to_journeys": {
+		"message": "加到旅程"
+	},
+	"select_a_journey": {
+		"message": "選擇旅程"
+	},
+	"create_new_journey": {
+		"message": "建立新的旅程"
+	},
+	"title": {
+		"message": "標題"
+	},
+	"create": {
+		"message": "建立"
+	},
+	"select_a_day": {
+		"message": "選擇旅程日"
+	},
+	"day_number": {
+		"message": "第$1天"
+	},
+	"add_day": {
+		"message": "增加天數"
+	},
+	"open_on_jourmap": {
+		"message": "在Jourmap開啟"
+	}
+}

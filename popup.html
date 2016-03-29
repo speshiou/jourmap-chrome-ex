@@ -14,6 +14,7 @@
 	    min-width:360px;
 		max-width:360px;
 		width:360px;
+		font-size: 14px;
 	}
 	
 	.content {
@@ -33,6 +34,10 @@
 	  white-space: nowrap;
 	  overflow: hidden;
 	  text-overflow: ellipsis;
+	}
+	
+	.jm-word-break {
+		word-break: break-word;
 	}
 	
 	md-tabs.layout-fill,
@@ -91,6 +96,23 @@
 	    left: 0px;
 	    overflow: hidden;
 	}
+	
+	.map-preview {
+		width: 100%;
+	}
+	
+	.jm-preview {
+		width: 80px;
+		height: 80px;
+		margin-right: 16px;
+		margin-top: 16px;
+		background-size: cover;
+		background-color: #dddddd;
+	}
+	
+	.md-list-item-text {
+		padding: 16px 0;
+	}
     </style>
 
     <!--
@@ -114,8 +136,8 @@
 	<md-progress-circular class="md-accent" md-mode='indeterminate' md-diameter="40" ng-if="loading"></md-progress-circular>
 	<div ng-if="!loading" layout="column" layout-align="center center">
 		<h1>Jourmap</h1>
-		<p>Please sign in first before you use this plugin</p>
-		<md-button class="md-raised md-primary" ng-click="openJourmap()">Open Jourmap</md-button>
+		<p>{{ _("sign_in_first") }}</p>
+		<md-button class="md-raised md-primary" ng-click="openJourmap()">{{ _("open_jourmap") }}</md-button>
 	</div>
   </md-content>
     <md-content class="content" ng-if="user" layout="column" layout-fill>
@@ -125,7 +147,7 @@
 					<md-toolbar class="md-hue-1">
 				      <div class="md-toolbar-tools">
 						  <h2 class="jm-truncate">
-				            <span>{{ searchResultTitle }}</span>
+				            <span>{{ _("search_results_title", [ selectedText ]) }}</span>
 				          </h2>
 				      </div>
 				    </md-toolbar>
@@ -144,7 +166,7 @@
   						</md-list-item>
   					</md-list>
 					<div layout="column" layout-align="center center" layout-padding>
-						<md-button ng-if="placesResult.more&&!loadingPlaces" class="md-accent" ng-click="loadMorePlaces(placesResult.next_page_token)">Load More</md-button>
+						<md-button ng-if="placesResult.more&&!loadingPlaces" class="md-accent" ng-click="loadMorePlaces(placesResult.next_page_token)">{{ _("load_more") }}</md-button>
 						<md-progress-circular class="md-accent" md-mode='indeterminate' md-diameter="40" ng-if="loadingPlaces"></md-progress-circular>
 					</div>
   				</md-content>
@@ -154,7 +176,7 @@
 							<md-icon>location_off</md-icon>
 					</div>
 						<div>
-							<p class="md-title">Place Not Found</p>
+							<p class="md-title">{{ _("place_not_found") }}</p>
 						</div>
 					</div>
 				</md-content>
@@ -166,12 +188,20 @@
 				          <md-button class="md-icon-button" aria-label="" ng-click="backToPlaceList();">
 				            <md-icon>arrow_back</md-icon>
 				  		  </md-button>
-						  <h2>
-				            <span>Select a Journey</span>
+						  <h2 flex>
+				            <span>{{ selectedPlace.name }}</span>
 				          </h2>
+				          <md-button class="md-icon-button" ng-class="{ 'md-accent' : selectedPlace.is_saved }" aria-label="" ng-click="savePlace(selectedPlace, !selectedPlace.is_saved);">
+							<md-tooltip md-direction="bottom">
+							          {{ _("save") }}
+							 </md-tooltip>
+				            <md-icon>{{ getSaveStateIconName(selectedPlace.is_saved) }}</md-icon>
+				  		  </md-button>
 				      </div>
 				    </md-toolbar>
 					<md-content flex>
+					<img class="map-preview" ng-if="selectedPlace.loc" src="{{ getMapImageUrl(selectedPlace) }}">
+					</img>
   					<md-list>
   						<md-list-item class="md-2-line">
   						    <md-icon class="md-avatar">{{ getPlaceIconName(selectedPlace.types) }}</md-icon>
@@ -182,24 +212,91 @@
 									<p class="md-body-1">{{ selectedPlace.formatted_address }}</p>
 							    </div>
 							</div>
-							<md-icon class="jm-icon-next" ng-class="{ 'md-accent' : selectedPlace.is_saved }">{{ getSaveStateIconName(selectedPlace.is_saved) }}</md-icon>
 							<md-divider></md-divider>
   						</md-list-item>
-  						<md-list-item class="md-2-line" ng-click="selectJourney(journey)" ng-repeat="journey in journeys">
-  						    <md-icon class="md-avatar">map</md-icon>
+  						<md-list-item ng-if="selectedPlace.phone">
+  						    <md-icon>phone</md-icon>
+							<p>
+								{{ selectedPlace.phone }}
+							</p>
+  						</md-list-item>
+  						<md-list-item ng-if="selectedPlace.url">
+  						    <md-icon>link</md-icon>
+							<p class="jm-word-break">
+								<a href="{{ selectedPlace.url }}" target="_blank">{{ selectedPlace.url }}</a>
+							</p>
+  						</md-list-item>
+  					</md-list>
+					<section>
+						<md-subheader class="md-no-sticky">{{ _("related_itineraries") }}</md-subheader>
+						<md-list>
+						      <md-list-item ng-href="{{ item.url }}" class="md-3-line" ng-repeat="item in itineraries" ng-click="openJourney(item)">
+						        <img ng-src="{{ item.image_url }}" class="jm-preview" />
+						        <div class="md-list-item-text" layout="column">
+						          <h3>{{ item.title }}</h3>
+								  <p ng-bind-html="item.body"></p>
+						          <h4>{{ item.caption }}</h4>
+						        </div>
+						      </md-list-item>
+						</md-list>
+						<div ng-if="loadingItineraries" layout="row" layout-align="center center">
+							<md-progress-circular class="md-accent" md-mode='indeterminate' md-diameter="40"></md-progress-circular>
+						</div>
+					</section>
+					</md-content>
+					<div layout="row">
+						<span flex></span>
+						<md-button class="md-raised md-primary" ng-click="selectJourneys()">{{ _("add_to_journeys") }}</md-button>
+					</div>
+  				</md-content>
+  			</md-tab>
+  			<md-tab label="dummy" ng-if="showJourneys">
+  				<md-content layout="column" layout-fill>
+					<md-toolbar class="md-hue-1">
+				      <div class="md-toolbar-tools">
+				          <md-button class="md-icon-button" aria-label="" ng-click="backToPlaceInfo();">
+				            <md-icon>arrow_back</md-icon>
+				  		  </md-button>
+						  <h2 flex>
+				            <span>{{ _("select_a_journey") }}</span>
+				          </h2>
+				          <md-button class="md-icon-button" aria-label="" ng-click="showAddJourney()">
+						<md-tooltip md-direction="bottom">
+						          {{ _("create_new_journey") }}
+						 </md-tooltip>
+				            <md-icon>add</md-icon>
+				  		  </md-button>
+				      </div>
+				    </md-toolbar>
+					<md-content flex>
+						<div ng-if="showNewJourney" layout-padding>
+							<md-input-container class="md-block">
+					          <label>{{ _("title") }}</label>
+					          <input ng-model="newJourneyData.title">
+					        </md-input-container>
+							<div layout="row">
+								<span flex></span>
+	  				          <md-button class="md-raised md-primary" aria-label="" ng-click="createJourney(newJourneyData)">
+	  				            {{ _("create") }}
+	  				  		  </md-button>
+						  </div>
+						</div>
+						<md-divider></md-divider>
+						<md-list-item class="md-2-line" ng-click="selectJourney(journey)" ng-repeat="journey in journeys">
+						    <div ng-style="{ 'background-image': (journey.image_url ? ('url(' + journey.image_url +')'): 'none') }" class="jm-preview"></div>
 							<div layout="column" layout-align="center stretch" flex>
 								<div class="jm-list-item-text" layout="column">
 								    <h3 class="md-subhead jm-truncate">{{ journey.title }}</h3>
-									<p class="md-body-1">{{ place.formatted_address }}</p>
+									<p class="md-body-1">{{ journey.created_timestamp | date:'MMM d, yyyy hh:mma' }}</p>
 							    </div>
 							</div>
 							<md-icon class="jm-icon-next">navigate_next</md-icon>
-  						</md-list-item>
-  					</md-list>
-					<div layout="column" layout-align="center center" layout-padding>
-						<md-button  ng-if="journeysResult.more&&!loadingJourneys" class="md-accent" ng-click="loadMoreJourneys(journeysResult.cursor)">Load More</md-button>
-						<md-progress-circular class="md-accent" md-mode='indeterminate' md-diameter="40" ng-if="loadingJourneys"></md-progress-circular>
-					</div>
+						</md-list-item>
+						<div layout="column" layout-align="center center" layout-padding>
+							<md-button  ng-if="journeysResult.more&&!loadingJourneys" class="md-accent" ng-click="loadMoreJourneys(journeysResult.cursor)">{{ _("load_more") }}</md-button>
+							<md-progress-circular class="md-accent" md-mode='indeterminate' md-diameter="40" ng-if="loadingJourneys"></md-progress-circular>
+						</div>
+					</md-content>
   				</md-content>
   			</md-tab>
   			<md-tab label="dummy" ng-if="selectedJourney">
@@ -210,7 +307,7 @@
 				            <md-icon>arrow_back</md-icon>
 				  		  </md-button>
 						  <h2>
-				            <span>Select a Day</span>
+				            <span>{{ _("select_a_day") }}</span>
 				          </h2>
 				      </div>
 				    </md-toolbar>
@@ -218,14 +315,19 @@
   					<md-list>
   						<md-list-item class="md-2-line" ng-click="addToJourneyDay(selectedJourney, day, selectedPlace)" ng-repeat="day in selectedJourney.days">
 							<div class="jm-list-item-text" layout="column">
-							    <h3 class="md-subhead jm-truncate">Day {{ $index + 1 }}</h3>
+							    <h3 class="md-subhead jm-truncate">{{ _("day_number", [ $index + 1 ]) }}</h3>
 								<p class="md-body-1">{{ getDayItinerary(day) }}</p>
 						    </div>
   						</md-list-item>
   					</md-list>
 					<div layout="column" layout-align="center center" layout-padding>
-						<md-button ng-if="!loadingJourneyDays" class="md-accent" ng-click="addJourneyDay(selectedJourney)">Add Day</md-button>
+						<md-button ng-if="!loadingJourneyDays" class="md-accent" ng-click="addJourneyDay(selectedJourney)">{{ _("add_day") }}</md-button>
 						<md-progress-circular class="md-accent" md-mode='indeterminate' md-diameter="40" ng-if="loadingJourneyDays"></md-progress-circular>
+					</div>
+					</md-content>
+					<div layout="row">
+						<span flex></span>
+						<md-button class="md-raised md-primary" ng-click="openJourney(selectedJourney)">{{ _("open_on_jourmap") }}</md-button>
 					</div>
   				</md-content>
   			</md-tab>
