@@ -1,4 +1,7 @@
 {
+	"app_name": {
+		"message": "Jourmap Place Helper"
+	},
 	"app_desc": {
 		"message": "Add interested places to your journeys on Jourmap"
 	},

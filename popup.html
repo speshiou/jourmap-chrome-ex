@@ -6,9 +6,9 @@
  -->
 <html>
   <head>
-    <title>Getting Started Extension's Popup</title>
+    <title>Jourmap Chrome Extension</title>
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-	<link href='https://material.angularjs.org/latest/angular-material.css' rel='stylesheet' type='text/css'>
+	<link href='angular-material.css' rel='stylesheet' type='text/css'>
     <style>
 	html,body {
 	    min-width:360px;
@@ -239,7 +239,7 @@
 				      </div>
 				    </md-toolbar>
 					<md-content flex>
-					<img class="map-preview" ng-if="selectedPlace.loc" src="{{ getMapImageUrl(selectedPlace) }}">
+					<img class="map-preview" ng-if="selectedPlace.loc" ng-src="{{ getMapImageUrl(selectedPlace) }}">
 					</img>
   					<md-list>
   						<md-list-item class="md-2-line">

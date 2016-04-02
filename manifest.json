@@ -1,9 +1,9 @@
 {
   "manifest_version": 2,
 
-  "name": "Jourmap",
+  "name": "__MSG_app_name__",
   "description": "__MSG_app_desc__",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "default_locale": "en",
 
   "browser_action": {

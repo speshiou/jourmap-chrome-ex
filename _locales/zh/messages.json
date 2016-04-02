@@ -1,4 +1,7 @@
 {
+	"app_name": {
+		"message": "Jourmap地點助手"
+	},
 	"app_desc": {
 		"message": "將你所感興趣的地點加到你的Jourmap旅程"
 	},
