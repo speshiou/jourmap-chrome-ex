@@ -206,7 +206,11 @@
 		
 		$scope.addJourneyDay = function(journey) {
 			$scope.loadingJourneyDays = true;
-			requestPost(apiHost + "/journey/" + journey.id + "/day", {}, function(response) {
+			var order = 10000;
+			if (journey.days.length > 0) {
+				order = journey.days[journey.days.length - 1].order + 10000
+			}
+			requestPost(apiHost + "/journey/" + journey.id + "/day", { order: order }, function(response) {
 				var newDay = response.data;
 				journey.days.push(newDay);
 				$scope.loadingJourneyDays = false;
@@ -218,33 +222,20 @@
 			      $mdToast.simple()
 					.textContent('Saving...')
 			    );
-			var places = [];
-			for (var i in day.places) {
-				var place = day.places[i];
-				places.push({ id: place.id, place_id: place.place_id });
-			}
-			places.push({ id: newPlace.id });
-			var data = { places: places };
-			requestPost(apiHost + "/journey/" + journey.id + "/day/" + day.id, data, function(response) {
-				var updatedDay = response.data;
-				for (var i in updatedDay.places) {
-					if (i < day.places.length && day.places[i].place_id == updatedDay.places[i].place_id) {
-						continue;
-					} else if (i == day.places.length) {
-						newPlace.place_id = updatedDay.places[i].place_id;
-						day.places.push(newPlace);
-						
-						$mdToast.show(
-						      $mdToast.simple()
-						        .textContent('Added ' + $scope.selectedPlace.name)
-						        .hideDelay(3000)
-						    );
-						break;
-					} else {
-						//failed
-						return;
-					}
-				}
+			var order = 10000;
+			if (day.places.length > 0) {
+				order = day.places[day.places.length - 1].order + 10000;
+			}	
+			var data = { id: newPlace.id, order: order };
+			requestPost(apiHost + "/journey/" + journey.id + "/day/" + day.id + "/place", data, function(response) {
+				var newJourneyPlace = response.data;
+				newPlace.order = newJourneyPlace.order;
+				newPlace.place_id = newJourneyPlace.place_id;
+				day.places.push(newPlace);
+				$mdToast.show(
+				      $mdToast.simple()
+				        .textContent('Added ' + $scope.selectedPlace.name)
+					.hideDelay(3000));
 			});
 		};
 		
